@@ -77,9 +77,9 @@ header{position:sticky;top:0;z-index:200;background:rgba(8,11,18,.96);backdrop-f
 .ad-leaderboard{width:100%;max-width:728px;height:90px;margin:10px auto}
 .ad-banner{width:100%;height:60px;margin:14px 0 0}
 
-/* ── SPORT TOGGLE GRID (primary sport cards only — 3 cols) ── */
-.sport-toggle-grid{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start}
-.sport-toggle-col{display:flex;flex-direction:column;gap:6px}
+/* ── SPORT TOGGLE GRID (primary sport cards only — 3 cols, always one row) ── */
+.sport-toggle-grid{display:flex;gap:8px;flex-wrap:nowrap;align-items:flex-start;width:100%}
+.sport-toggle-col{display:flex;flex-direction:column;gap:6px;flex:1;min-width:0}
 
 /* ── PLAYER POOLS DRAWER ── */
 /* Collapsible secondary-pool section. Sits below the 3 primary sport cards.
@@ -209,10 +209,11 @@ main{max-width:1440px;margin:0 auto;padding:20px}
 
 /* Each card represents one sport. Active = included in calc. */
 .sport-toggle-card{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 16px;border-radius:var(--radius);
+  display:flex;align-items:center;gap:8px;
+  padding:10px 12px;border-radius:var(--radius);
   border:2px solid var(--border);background:var(--surface2);
   cursor:pointer;transition:all .2s;user-select:none;
+  width:100%;min-width:0;
 }
 .sport-toggle-card:hover{border-color:var(--border2)}
 .sport-toggle-card.active[data-sport="nfl"]{border-color:var(--nfl);background:var(--nfl-soft)}
@@ -344,6 +345,11 @@ main{max-width:1440px;margin:0 auto;padding:20px}
 /* Verdict */
 .verdict-panel{margin-top:18px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;display:none;animation:verdict-in .3s ease}
 .verdict-panel.visible{display:block}
+/* Scrollable inner container — keeps page scroll separate from verdict scroll on tall analyses */
+.verdict-scroll{max-height:80vh;overflow-y:auto;overflow-x:hidden}
+.verdict-scroll::-webkit-scrollbar{width:4px}
+.verdict-scroll::-webkit-scrollbar-track{background:var(--surface)}
+.verdict-scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 @keyframes verdict-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 .verdict-top{display:flex;align-items:flex-start;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:12px}
 .verdict-label{font-family:var(--font-mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:4px;display:flex;align-items:center;gap:8px}
@@ -519,8 +525,9 @@ main{max-width:1440px;margin:0 auto;padding:20px}
   .league-select{min-width:80px;font-size:10px}
   .header-right{gap:6px;flex-wrap:wrap}
   .sport-toggle-grid{gap:6px}
-  /* Sport toggle cards: content-sized, adequate touch target via padding */
-  .sport-toggle-card{padding:10px 12px}
+  /* Sport toggle cards: shrink equally, never wrap */
+  .sport-toggle-card{padding:8px 8px;gap:5px;flex-shrink:1}
+  .stc-name{font-size:12px;letter-spacing:.5px}
   /* Player pools drawer: slightly larger tap targets on mobile */
   .pp-trigger{padding:9px 12px}
   .pool-pill{padding:8px 12px}
@@ -532,6 +539,11 @@ main{max-width:1440px;margin:0 auto;padding:20px}
   .pos-pill{padding:6px 13px}
   /* Mini buttons in saved trades */
   .mini-btn{padding:7px 10px}
+}
+@media(max-width:420px){
+  /* Hide emoji on very small screens so sport name stays visible */
+  .stc-emoji{display:none}
+  .stc-icon{display:none}
 }
 @media(max-width:480px){
   .verdict-scores{grid-template-columns:1fr}
@@ -656,11 +668,11 @@ main{max-width:1440px;margin:0 auto;padding:20px}
     </div>
 
     <!-- Row 2: Player Pools collapsible drawer (secondary / developmental pools) -->
-    <!-- Default: closed. All secondary pools default OFF. -->
-    <div class="player-pools-drawer" id="player-pools-drawer">
-      <div class="pp-trigger" onclick="togglePlayerPools()" role="button" aria-expanded="false" aria-controls="pp-inner">
+    <!-- Default: OPEN. All secondary pools default OFF — user must toggle each pill. -->
+    <div class="player-pools-drawer open" id="player-pools-drawer">
+      <div class="pp-trigger" onclick="togglePlayerPools()" role="button" aria-expanded="true" aria-controls="pp-inner">
         <div class="pp-trigger-left">
-          <span class="pp-trigger-label">▼ Player Pools</span>
+          <span class="pp-trigger-label">+ Include Prospects &amp; Minor Leagues</span>
           <span class="pp-active-count" id="pp-active-count">0 active</span>
         </div>
         <span class="pp-chevron">▾</span>
@@ -679,6 +691,7 @@ main{max-width:1440px;margin:0 auto;padding:20px}
           <span class="pp-icon">⚾</span>
           <span class="pp-name">MiLB</span>
           <span class="pp-sport-tag" style="background:var(--mlb-soft);color:var(--mlb)">MLB</span>
+          <span style="font-family:var(--font-mono);font-size:7px;padding:1px 4px;border-radius:2px;background:rgba(34,197,94,.15);color:var(--win);border:1px solid rgba(34,197,94,.3);letter-spacing:.5px">LIVE</span>
         </div>
 
         <!-- NCAAB — under NBA column; coming soon -->
@@ -700,6 +713,7 @@ main{max-width:1440px;margin:0 auto;padding:20px}
           <span class="pp-icon">🏀</span>
           <span class="pp-name">G-League</span>
           <span class="pp-sport-tag" style="background:var(--nba-soft);color:var(--nba)">NBA</span>
+          <span style="font-family:var(--font-mono);font-size:7px;padding:1px 4px;border-radius:2px;background:rgba(34,197,94,.15);color:var(--win);border:1px solid rgba(34,197,94,.3);letter-spacing:.5px">LIVE</span>
         </div>
 
       </div>
@@ -1730,7 +1744,7 @@ function buildTeamPanelHTML(side){
         <div class="search-dropdown" id="dd-${side}"></div>
       </div>
       <div class="players-list" id="list-${side}">
-        <div class="empty-msg">Search and add players to Team ${side.toUpperCase()}</div>
+        <div class="empty-msg">Search and add players to ${getTeamName(side)}</div>
       </div>
     </div>`;
 }
@@ -1852,9 +1866,9 @@ function getCalcPool(){
 }
 
 const DD_TIMERS={};
-const lastSide={a:'a',b:'b'};
+const lastSide={last:'a'};
 
-function doSearch(side){clearTimeout(DD_TIMERS[side]);DD_TIMERS[side]=setTimeout(()=>renderDD(side),100);}
+function doSearch(side){lastSide.last=side;clearTimeout(DD_TIMERS[side]);DD_TIMERS[side]=setTimeout(()=>renderDD(side),100);}
 function openDD(side){lastSide.last=side;setTimeout(()=>renderDD(side),60);}
 function delayClose(side){clearTimeout(DD_TIMERS[`close-${side}`]);DD_TIMERS[`close-${side}`]=setTimeout(()=>{const el=document.getElementById(`dd-${side}`);if(el)el.classList.remove('open');},220);}
 // Close dropdowns only when tapping outside both the input and the dropdown.
@@ -2021,7 +2035,7 @@ function addPlayer(id){
 // ================================================================
 function renderList(side){
   const list=TRADE[side],el=document.getElementById(`list-${side}`);if(!el)return;
-  if(!list.length){el.innerHTML=`<div class="empty-msg">Search and add players to Team ${side.toUpperCase()}</div>`;return;}
+  if(!list.length){el.innerHTML=`<div class="empty-msg">Search and add players to ${getTeamName(side)}</div>`;return;}
   el.innerHTML=list.map(p=>{
     const isPick=p.age==='PICK';
     const cs=isPick?'pick':p.sport;
@@ -2140,20 +2154,21 @@ function analyze(){
   const needlePct = isTwoTeam && (totals.a+totals.b>0) ? (totals.a/(totals.a+totals.b)*100) : 50;
   const meterHTML = isTwoTeam ? `
     <div class="verdict-meter-wrap">
-      <div class="verdict-meter-header"><span class="vmh-label">Trade Balance Meter</span><span class="vmh-pct">${pct.toFixed(1)}% gap · ${Math.round(needlePct)}% A / ${Math.round(100-needlePct)}% B</span></div>
+      <div class="verdict-meter-header"><span class="vmh-label">Trade Balance Meter</span><span class="vmh-pct">${pct.toFixed(1)}% gap · ${Math.round(needlePct)}% ${getTeamName('a')} / ${Math.round(100-needlePct)}% ${getTeamName('b')}</span></div>
       <div class="fairness-track"><div class="fairness-needle" style="left:${needlePct}%"></div></div>
       <div class="fairness-labels"><span>⬅ ${getTeamName('a')} Heavy</span><span style="color:var(--win)">● Fair Zone</span><span>${getTeamName('b')} Heavy ➡</span></div>
     </div>` : '';
 
   // Breakdown side-badge CSS class: use existing br-side-a / br-side-b for a/b; inline style for c/d
   const sideBadgeHTML = s => {
-    if(s==='a') return `<span class="br-side br-side-a">TM A</span>`;
-    if(s==='b') return `<span class="br-side br-side-b">TM B</span>`;
-    return `<span class="br-side" style="background:${SIDE_META[s].color}22;color:${SIDE_META[s].color}">TM ${s.toUpperCase()}</span>`;
+    const label=getTeamName(s).slice(0,8); // cap at 8 chars to keep badge compact
+    if(s==='a') return `<span class="br-side br-side-a">${label}</span>`;
+    if(s==='b') return `<span class="br-side br-side-b">${label}</span>`;
+    return `<span class="br-side" style="background:${SIDE_META[s].color}22;color:${SIDE_META[s].color}">${label}</span>`;
   };
 
   const panel=document.getElementById('verdict-panel');
-  panel.innerHTML=`
+  panel.innerHTML=`<div class="verdict-scroll">
     <div class="verdict-top">
       <div>
         <div class="verdict-label">Trade Analysis <span class="format-badge ${currentFormat}">${fmtLabel}</span>${sides.length>2?`<span style="font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-left:6px">${sides.length}-TEAM</span>`:''}</div>
@@ -2170,7 +2185,8 @@ function analyze(){
     </div>
     ${meterHTML}
     ${pct>=4?`<div class="even-trade-panel"><div class="even-trade-title">💡 Even This Trade</div><div class="even-trade-sub">${getTeamName(loserSide)} needs ~<strong style="color:var(--gold)">${diff.toLocaleString()}</strong> more pts to balance. Suggested assets to add:</div><div class="suggestions-grid">${sug.length?sug.map(p=>suggCardHTML(loserSide,p)).join(''):'<div style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">Sync more players for suggestions.</div>'}</div></div>`:''}
-    <div class="verdict-breakdown"><div class="breakdown-header">All Assets — ${fmtLabel} Values</div>${allRows.map(p=>{const cs=p.age==='PICK'?'pick':p.sport;return`<div class="breakdown-row"><span class="br-name">${p.displayName}</span><span class="chip chip-${cs}" style="font-size:9px">${p.age==='PICK'?'PICK':p.sport.toUpperCase()}</span>${sideBadgeHTML(p.sideKey)}<span class="br-val">${(p.value||0).toLocaleString()}</span></div>`;}).join('')}</div>`;
+    <div class="verdict-breakdown"><div class="breakdown-header">All Assets — ${fmtLabel} Values</div>${allRows.map(p=>{const cs=p.age==='PICK'?'pick':p.sport;return`<div class="breakdown-row"><span class="br-name">${p.displayName}</span><span class="chip chip-${cs}" style="font-size:9px">${p.age==='PICK'?'PICK':p.sport.toUpperCase()}</span>${sideBadgeHTML(p.sideKey)}<span class="br-val">${(p.value||0).toLocaleString()}</span></div>`;}).join('')}</div>
+  </div>`;
   panel.classList.add('visible');
   setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'nearest'}),50);
 }
@@ -2186,12 +2202,12 @@ function getEvenSuggestions(gap,losingSide,pct){
 }
 function suggCardHTML(side,p){
   const isPick=p.age==='PICK';const cs=isPick?'pick':p.sport,cl=isPick?'PICK':p.sport.toUpperCase();
-  return`<div class="suggestion-card" onclick="addSuggestion('${side}','${p.id}')"><div class="sug-info"><div class="sug-add-label">+ ADD TO TM ${side.toUpperCase()}</div><div class="sug-name">${p.displayName}</div><div class="sug-meta"><span class="chip chip-${cs}">${cl}</span> ${p.pos}</div></div><div class="sug-val">${(p.value||0).toLocaleString()}</div></div>`;
+  return`<div class="suggestion-card" onclick="addSuggestion('${side}','${p.id}')"><div class="sug-info"><div class="sug-add-label">+ ADD TO ${getTeamName(side).toUpperCase()}</div><div class="sug-name">${p.displayName}</div><div class="sug-meta"><span class="chip chip-${cs}">${cl}</span> ${p.pos}</div></div><div class="sug-val">${(p.value||0).toLocaleString()}</div></div>`;
 }
 function addSuggestion(side,id){
   const pool=getCalcPool();const player=pool.find(p=>p.id===id);if(!player)return;
   TRADE[side].push(player);renderList(side);updateTotals();analyze();
-  toast(`${player.displayName} added to Team ${side.toUpperCase()}`,'ok');
+  toast(`${player.displayName} added to ${getTeamName(side)}`,'ok');
 }
 function hideVerdict(){const p=document.getElementById('verdict-panel');if(p)p.classList.remove('visible');}
 
@@ -2205,7 +2221,11 @@ function hideVerdict(){const p=document.getElementById('verdict-panel');if(p)p.c
 function buildShareURL(){
   const sides=getActiveSides();
   const sideParts=sides.map(s=>`${s}:${TRADE[s].map(p=>p.id).join(',')}`).join('|');
-  const hash=`trade=${sideParts}|fmt:${currentFormat}`;
+  // Encode custom team names — only include sides that have non-default names
+  const nameDefaults={a:'Team A',b:'Team B',c:'Team C',d:'Team D'};
+  const nameParts=sides.filter(s=>TEAM_NAMES[s]&&TEAM_NAMES[s]!==nameDefaults[s])
+    .map(s=>`n${s}:${encodeURIComponent(TEAM_NAMES[s])}`).join('|');
+  const hash=`trade=${sideParts}|fmt:${currentFormat}${nameParts?'|'+nameParts:''}`;
   return `${location.origin}${location.pathname}#${encodeURIComponent(hash)}`;
 }
 
@@ -2218,6 +2238,15 @@ function loadFromURL(){
   const urlSides=['a','b','c','d'].filter(s=>parts[s]!==undefined);
   if(!urlSides.length)return;
   setFormat(fmt);
+  // Restore custom team names (keys are na, nb, nc, nd)
+  ['a','b','c','d'].forEach(s=>{
+    if(parts[`n${s}`]){
+      const decoded=decodeURIComponent(parts[`n${s}`]);
+      TEAM_NAMES[s]=decoded;
+      const el=document.getElementById(`team-name-${s}`);
+      if(el) el.textContent=decoded;
+    }
+  });
   const tryLoad=()=>{
     const resolve=ids=>ids.map(id=>{
       for(const s of['nfl','mlb','nba']){const pk=(PICKS[s]||[]).find(p=>p.id===id);if(pk)return pk;}
@@ -2234,6 +2263,13 @@ function loadFromURL(){
         // Add dynamic team if not already active
         if(!ACTIVE_SIDES.includes(s)) addTeam();
         TRADE[s]=resolved;
+      }
+    });
+    // After addTeam() may have reset name elements, re-apply custom names to DOM
+    ['a','b','c','d'].forEach(s=>{
+      if(parts[`n${s}`]){
+        const el=document.getElementById(`team-name-${s}`);
+        if(el) el.textContent=TEAM_NAMES[s];
       }
     });
     const anyLoaded=urlSides.some(s=>TRADE[s].length>0);
@@ -2305,11 +2341,13 @@ function confirmSave(){
   const totals={};sides.forEach(s=>{totals[s]=TRADE[s].reduce((sum,p)=>sum+(p.value||0),0);});
   const snaps={};sides.forEach(s=>{snaps[s]=snap(s);});
   const totalAssets=sides.reduce((n,s)=>n+TRADE[s].length,0);
+  // Snapshot custom team names for all active sides
+  const teamNames={};sides.forEach(s=>{teamNames[s]=getTeamName(s);});
   // Legacy a/b keys kept for backward compat; extra sides stored in snaps
   SAVED.unshift({
     id:Date.now(),name,date:new Date().toLocaleDateString(),
     a:snaps.a||[],b:snaps.b||[],
-    sides, snaps, totals,
+    sides, snaps, totals, teamNames,
     ta:totals.a||0,tb:totals.b||0,
     fmt:currentFormat,
     teamCount:sides.length,
@@ -2325,12 +2363,22 @@ function loadTrade(id){
   if(entry.fmt)setFormat(entry.fmt);
   // Reset to A+B first
   clearTrade();
+  // Restore custom team names if saved
+  const savedNames=entry.teamNames||{};
   // Load sides — support both new multi-team format and old a/b-only format
   const sides=entry.sides||['a','b'];
   const snaps=entry.snaps||{a:entry.a||[],b:entry.b||[]};
   sides.forEach(s=>{
     if(s!=='a'&&s!=='b'&&!ACTIVE_SIDES.includes(s)) addTeam();
     TRADE[s]=snaps[s]||[];
+  });
+  // Apply custom names after DOM panels are in place
+  sides.forEach(s=>{
+    if(savedNames[s]){
+      TEAM_NAMES[s]=savedNames[s];
+      const el=document.getElementById(`team-name-${s}`);
+      if(el) el.textContent=savedNames[s];
+    }
   });
   setPage('calc');
   getActiveSides().forEach(s=>renderList(s));
@@ -2353,9 +2401,11 @@ function renderSaved(){
     const teams=(t.teamCount||2);
     const assets=(t.totalAssets!=null?t.totalAssets:(t.a?.length||0)+(t.b?.length||0));
     const teamTag=teams>2?` · ${teams}-TEAM`:'';
+    const savedNames=t.teamNames||{};
+    const nameOf=s=>(savedNames[s]||(s==='a'?'Team A':s==='b'?'Team B':s==='c'?'Team C':'Team D'));
     const valueStr=teams===2
-      ?`A: ${(t.ta||0).toLocaleString()} vs B: ${(t.tb||0).toLocaleString()}`
-      :`${Object.entries(t.totals||{a:t.ta,b:t.tb}).map(([k,v])=>`${k.toUpperCase()}: ${(v||0).toLocaleString()}`).join(' vs ')}`;
+      ?`${nameOf('a')}: ${(t.ta||0).toLocaleString()} vs ${nameOf('b')}: ${(t.tb||0).toLocaleString()}`
+      :`${Object.entries(t.totals||{a:t.ta,b:t.tb}).map(([k,v])=>`${nameOf(k)}: ${(v||0).toLocaleString()}`).join(' vs ')}`;
     return `
     <div class="saved-item">
       <div class="si-info">
@@ -2373,17 +2423,23 @@ function renderSaved(){
 
 function copySavedLink(id){
   const entry=SAVED.find(t=>t.id===id);if(!entry)return;
-  // Temporarily set TRADE + ACTIVE_SIDES to saved state, build URL, restore
+  // Temporarily set TRADE + ACTIVE_SIDES + TEAM_NAMES to saved state, build URL, then always restore
   const prevSides=[...ACTIVE_SIDES];
+  const prevNames={...TEAM_NAMES};
   const prevTrade={};['a','b','c','d'].forEach(s=>{prevTrade[s]=[...TRADE[s]];});
   const sides=entry.sides||['a','b'];
   const snaps=entry.snaps||{a:entry.a||[],b:entry.b||[]};
+  const savedNames=entry.teamNames||{};
   ACTIVE_SIDES=sides;
-  sides.forEach(s=>{TRADE[s]=snaps[s]||[];});
-  const url=buildShareURL();
-  ACTIVE_SIDES=prevSides;
-  ['a','b','c','d'].forEach(s=>{TRADE[s]=prevTrade[s];});
-  navigator.clipboard.writeText(url).then(()=>toast('Link copied!','ok'));
+  sides.forEach(s=>{TRADE[s]=snaps[s]||[];TEAM_NAMES[s]=savedNames[s]||TEAM_NAMES[s];});
+  let url;
+  try{ url=buildShareURL(); }
+  finally{
+    ACTIVE_SIDES=prevSides;
+    ['a','b','c','d'].forEach(s=>{TRADE[s]=prevTrade[s];});
+    Object.assign(TEAM_NAMES,prevNames);
+  }
+  if(url) navigator.clipboard.writeText(url).then(()=>toast('Link copied!','ok'));
 }
 
 // ================================================================
